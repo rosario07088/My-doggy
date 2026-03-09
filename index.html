@@ -21,156 +21,143 @@
             color: var(--text-color);
             margin: 0; padding: 0;
             display: flex; flex-direction: column; align-items: center;
+            overflow-x: hidden;
         }
 
-        /* 標題與插圖 */
-        .header { text-align: center; padding: 20px; }
-        .paw-print { font-size: 30px; color: var(--primary-blue); margin-bottom: 5px; }
+        .header { text-align: center; padding: 20px 0 10px; }
+        .paw-print { font-size: 24px; color: var(--primary-blue); }
 
-        /* 月曆選擇器 */
-        .month-selector {
-            margin-bottom: 15px;
-            display: flex; align-items: center; gap: 10px;
-        }
-        select {
-            padding: 5px 15px; border-radius: 15px; border: 1px solid var(--primary-blue);
-            color: var(--text-color); font-size: 16px; background: white;
-        }
+        .nav-tabs { display: flex; width: 100%; max-width: 400px; background: white; position: sticky; top: 0; z-index: 10; }
+        .tab { flex: 1; text-align: center; padding: 15px; cursor: pointer; border-bottom: 3px solid transparent; font-size: 14px; }
+        .tab.active { border-bottom: 3px solid var(--primary-blue); font-weight: bold; color: var(--primary-blue); }
 
-        /* 月曆樣式 */
-        .view-section { width: 100%; max-width: 400px; padding: 10px; box-sizing: border-box; }
-        .calendar-container {
-            background: var(--card-bg); border-radius: 20px; padding: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
-        .day {
-            aspect-ratio: 1; display: flex; flex-direction: column; align-items: center;
-            justify-content: center; font-size: 14px; border-radius: 10px;
-            position: relative; cursor: pointer;
-        }
+        .view-section { width: 100%; max-width: 400px; padding: 15px; box-sizing: border-box; }
+        
+        .calendar-container { background: var(--card-bg); border-radius: 20px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .month-selector { margin-bottom: 15px; display: flex; justify-content: center; gap: 10px; }
+        select { padding: 8px 12px; border-radius: 12px; border: 1px solid var(--primary-blue); background: white; font-size: 14px; color: var(--text-color); }
+
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+        .day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 14px; cursor: pointer; position: relative; }
         .day.has-content::after { content: '❤️'; font-size: 8px; position: absolute; bottom: 2px; }
         .day.today { background-color: var(--primary-blue); color: white; }
 
-        /* 全螢幕卡片視圖 */
         #card-view {
-            display: none; width: 100vw; height: 80vh;
+            display: none; width: 100vw; height: calc(100vh - 150px);
             overflow-x: auto; scroll-snap-type: x mandatory;
-            white-space: nowrap; padding: 20px 0;
+            white-space: nowrap; -webkit-overflow-scrolling: touch;
         }
         .flip-card {
-            display: inline-block; width: 85vw; height: 100%;
-            margin: 0 7.5vw; background: white; border-radius: 25px;
+            display: inline-block; width: 85vw; height: 90%;
+            margin: 20px 7.5vw; background: white; border-radius: 25px;
             vertical-align: top; white-space: normal; scroll-snap-align: center;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1); border: 1px solid var(--primary-blue);
-            padding: 25px; box-sizing: border-box; overflow-y: auto;
-        }
-        .card-photo { width: 100%; border-radius: 15px; margin-top: 10px; }
-
-        /* 編輯彈窗 */
-        .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 100;
-        }
-        .modal-content {
-            background: var(--card-bg); width: 90%; max-height: 85vh;
-            border-radius: 25px; padding: 20px; overflow-y: auto; box-sizing: border-box;
-        }
-        textarea, input {
-            width: 100%; border: 1px solid #e0e6ed; border-radius: 10px;
-            padding: 10px; margin: 5px 0 12px; box-sizing: border-box;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08); padding: 25px; 
+            box-sizing: border-box; overflow-y: auto; border: 1px solid #eee;
         }
 
-        .btn {
-            background: var(--primary-blue); color: white; border: none;
-            padding: 12px; border-radius: 20px; width: 100%; font-size: 16px; margin-top: 10px;
-        }
-        .vocab-box {
-            background: #fdf2f2; border-left: 4px solid var(--heart-red);
-            padding: 10px; margin-top: 10px; border-radius: 5px; display: none;
-        }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 100; }
+        .modal-content { background: white; width: 90%; max-height: 85vh; border-radius: 25px; padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        label { display: block; margin-top: 15px; font-weight: bold; color: var(--primary-blue); font-size: 14px; }
+        textarea, input { width: 100%; border: 1px solid #eef2f6; border-radius: 12px; padding: 12px; margin-top: 5px; box-sizing: border-box; background: #fcfdfe; font-size: 15px; }
+        
+        .btn { background: var(--primary-blue); color: white; border: none; padding: 14px; border-radius: 20px; width: 100%; font-size: 16px; margin-top: 20px; font-weight: bold; }
+        .secondary-btn { background: none; color: var(--accent-gray); border: 1px solid var(--accent-gray); margin-top: 10px; font-size: 12px; padding: 10px; border-radius: 15px; width: 100%; cursor: pointer; }
 
-        .nav-tabs { display: flex; width: 100%; max-width: 400px; margin-bottom: 10px; }
-        .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; border-bottom: 2px solid transparent; }
-        .tab.active { border-bottom: 2px solid var(--primary-blue); font-weight: bold; }
+        .vocab-tag { display: inline-block; background: #fff5f5; color: #ff8a8a; padding: 6px 14px; border-radius: 12px; font-size: 13px; margin-top: 15px; border: 1px solid #ffe3e3; width: 100%; box-sizing: border-box; }
+        .card-photo { width: 100%; border-radius: 15px; margin-bottom: 15px; object-fit: cover; max-height: 250px; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <div class="paw-print">🐾 🐾</div>
-        <h2 style="color: var(--primary-blue); margin: 0;">Tell My Doggy</h2>
+        <h2 style="color: var(--primary-blue); margin: 0; font-size: 20px;">Tell My Doggy</h2>
     </div>
 
     <div class="nav-tabs">
         <div class="tab active" id="tab-cal" onclick="showView('cal')">月曆回顧</div>
-        <div class="tab" id="tab-card" onclick="showView('card')">卡片模式</div>
+        <div class="tab" id="tab-card" onclick="showView('card')">卡片滑動模式</div>
     </div>
 
     <div id="cal-section" class="view-section">
         <div class="month-selector">
-            <select id="yearSel" onchange="initCalendar()"></select>
+            <select id="yearSel" onchange="updateMonthOptions()"></select>
             <select id="monthSel" onchange="initCalendar()"></select>
         </div>
         <div class="calendar-container">
             <div class="calendar-grid" id="calendarGrid"></div>
         </div>
+        
+        <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+            <button class="secondary-btn" onclick="exportData()">📤 匯出備份 (防紀錄不見)</button>
+            <button class="secondary-btn" onclick="document.getElementById('importFile').click()">📥 匯入/還原紀錄</button>
+            <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
+        </div>
     </div>
 
     <div id="card-view"></div>
 
-    <div style="padding: 20px; width: 100%; max-width: 400px; box-sizing: border-box;">
-        <button class="btn" style="background: var(--accent-gray);" onclick="exportData()">匯出數據給 Gemini 🐾</button>
-    </div>
-
     <div id="editorModal" class="modal">
         <div class="modal-content">
-            <h3 id="selectedDateText" style="color: var(--primary-blue); margin-top:0;">日期</h3>
+            <h3 id="selectedDateText" style="color: var(--primary-blue); margin: 0 0 15px 0;">日期</h3>
             
             <label>🎵 每日金曲</label>
-            <input type="text" id="music">
+            <input type="text" id="music" placeholder="今天的主題曲...">
             
             <label>📷 上傳照片</label>
             <input type="file" id="photoInput" accept="image/*" onchange="handlePhoto(this)">
             <div id="photoPreview"></div>
 
-            <label>🙏 三個感恩</label>
-            <textarea id="gratitude" rows="2"></textarea>
+            <label>🍡 三個感恩</label>
+            <textarea id="gratitude" rows="3"></textarea>
             
-            <label>✅ 三個完成</label>
-            <textarea id="done" rows="2"></textarea>
+            <label>🍀 三個完成</label>
+            <textarea id="done" rows="3"></textarea>
             
             <label>✨ 三個高光時刻</label>
-            <textarea id="highlight" rows="2"></textarea>
+            <textarea id="highlight" rows="3"></textarea>
 
-            <div id="vocabDisplay" class="vocab-box">
-                <strong style="color: #d63384;">💡 今日單字：</strong><br>
-                <span id="vocabWord"></span>
-            </div>
-            
-            <button class="btn" onclick="saveData()">儲存並領取單字 ✨</button>
-            <button class="btn" style="background:#ccc;" onclick="closeModal()">關閉</button>
+            <button class="btn" onclick="saveData()">儲存美好時刻 ✨</button>
+            <button class="btn" style="background:#eee; color:#999; margin-top:10px;" onclick="closeModal()">關閉</button>
         </div>
     </div>
 
     <script>
-        let currentData = JSON.parse(localStorage.getItem('doggyDiaryV2')) || {};
+        let currentData = JSON.parse(localStorage.getItem('doggyDiaryV4')) || {};
         let editingDate = '';
         let tempPhoto = '';
 
         const vocabs = [
-            {en: "Resilient", ch: "有韌性的"}, {en: "Grateful", ch: "感激的"},
-            {en: "Radiant", ch: "容光煥發的"}, {en: "Persistent", ch: "堅持不懈的"},
-            {en: "Serene", ch: "寧靜的"}, {en: "Sparkle", ch: "閃耀"},
-            {en: "Mindful", ch: "留心的"}, {en: "Optimistic", ch: "樂觀的"}
+            {en: "Serendipity", kk: "/ˌserənˈdipədē/", ch: "不期而遇的美好"},
+            {en: "Luminous", kk: "/ˈlo͞omənəs/", ch: "發光的 / 明亮的"},
+            {en: "Brave", kk: "/brāv/", ch: "勇敢的"},
+            {en: "Cherish", kk: "/ˈtʃer.ɪʃ/", ch: "珍愛 / 珍惜"},
+            {en: "Euphoria", kk: "/juːˈfɔːr.i.ə/", ch: "極度愉快"},
+            {en: "Bloom", kk: "/bluːm/", ch: "盛開"},
+            {en: "Comfort", kk: "/ˈkʌm.fət/", ch: "安慰 / 舒適"},
+            {en: "Vibrant", kk: "/ˈvaɪ.brənt/", ch: "充滿活力的"}
         ];
 
         function initSelectors() {
             const yearSel = document.getElementById('yearSel');
+            const currentYear = new Date().getFullYear();
+            yearSel.add(new Option("2026年", 2026));
+            yearSel.add(new Option("2027年", 2027));
+            yearSel.value = 2026;
+            updateMonthOptions();
+        }
+
+        function updateMonthOptions() {
+            const year = document.getElementById('yearSel').value;
             const monthSel = document.getElementById('monthSel');
-            for(let y=2026; y<=2027; y++) yearSel.add(new Option(y, y));
-            for(let m=3; m<=12; m++) monthSel.add(new Option(m + '月', m-1));
-            yearSel.value = 2026; monthSel.value = 2; // 預設三月
+            monthSel.innerHTML = '';
+            
+            // 2026年從3月開始，2027年從1月開始
+            const startMonth = (year == "2026") ? 2 : 0; 
+            for(let m = startMonth; m < 12; m++) {
+                monthSel.add(new Option((m + 1) + '月', m));
+            }
+            initCalendar();
         }
 
         function initCalendar() {
@@ -185,6 +172,12 @@
                 const dayEl = document.createElement('div');
                 dayEl.className = 'day';
                 if (currentData[dateStr]) dayEl.classList.add('has-content');
+                
+                const today = new Date();
+                if (i === today.getDate() && m == today.getMonth() && y == today.getFullYear()) {
+                    dayEl.classList.add('today');
+                }
+                
                 dayEl.innerText = i;
                 dayEl.onclick = () => openEditor(dateStr);
                 grid.appendChild(dayEl);
@@ -196,7 +189,7 @@
             const reader = new FileReader();
             reader.onloadend = () => {
                 tempPhoto = reader.result;
-                document.getElementById('photoPreview').innerHTML = `<img src="${tempPhoto}" style="width:100%; border-radius:10px; margin: 10px 0;">`;
+                document.getElementById('photoPreview').innerHTML = `<img src="${tempPhoto}" style="width:100%; border-radius:12px; margin-top:10px;">`;
             };
             if (file) reader.readAsDataURL(file);
         }
@@ -209,16 +202,16 @@
             document.getElementById('gratitude').value = saved.gratitude || '';
             document.getElementById('done').value = saved.done || '';
             document.getElementById('highlight').value = saved.highlight || '';
-            document.getElementById('photoPreview').innerHTML = saved.photo ? `<img src="${saved.photo}" style="width:100%; border-radius:10px; margin: 10px 0;">` : '';
+            document.getElementById('photoPreview').innerHTML = saved.photo ? `<img src="${saved.photo}" style="width:100%; border-radius:12px; margin-top:10px;">` : '';
             tempPhoto = saved.photo || '';
-            document.getElementById('vocabDisplay').style.display = 'none';
             document.getElementById('editorModal').style.display = 'flex';
         }
 
         function saveData() {
-            const v = vocabs[Math.floor(Math.random() * vocabs.length)];
-            document.getElementById('vocabWord').innerText = `${v.en} [${v.ch}]`;
-            document.getElementById('vocabDisplay').style.display = 'block';
+            let vocabObj = currentData[editingDate]?.vocabObj;
+            if (!vocabObj) {
+                vocabObj = vocabs[Math.floor(Math.random() * vocabs.length)];
+            }
 
             currentData[editingDate] = {
                 music: document.getElementById('music').value,
@@ -226,12 +219,13 @@
                 done: document.getElementById('done').value,
                 highlight: document.getElementById('highlight').value,
                 photo: tempPhoto,
-                vocab: v.en
+                vocabObj: vocabObj
             };
-            localStorage.setItem('doggyDiaryV2', JSON.stringify(currentData));
+            localStorage.setItem('doggyDiaryV4', JSON.stringify(currentData));
             initCalendar();
             renderCards();
-            setTimeout(() => { alert("儲存成功！記得複習單字喔🐾"); }, 500);
+            alert(`儲存成功！🐾\n今日單字：${vocabObj.en} ${vocabObj.kk}`);
+            closeModal();
         }
 
         function renderCards() {
@@ -240,7 +234,7 @@
             const sortedDates = Object.keys(currentData).sort((a,b) => new Date(b) - new Date(a));
             
             if(sortedDates.length === 0) {
-                container.innerHTML = "<div class='flip-card'>目前還沒有日記喔，去月曆點擊日期寫下一篇吧！</div>";
+                container.innerHTML = "<div class='flip-card'><h3>目前還沒有日記喔</h3><p>回到月曆點擊日期開始寫吧！🐾</p></div>";
                 return;
             }
 
@@ -249,14 +243,18 @@
                 const card = document.createElement('div');
                 card.className = 'flip-card';
                 card.innerHTML = `
-                    <h3 style="color:var(--primary-blue); border-bottom:1px solid #eee; padding-bottom:10px;">📅 ${date}</h3>
+                    <div style="font-size:12px; color:var(--accent-gray)">${date}</div>
+                    <h3 style="margin: 5px 0 15px 0; color:var(--primary-blue)">Tell My Doggy 🐾</h3>
                     ${d.photo ? `<img src="${d.photo}" class="card-photo">` : ''}
-                    <p><strong>🎵 每日金曲：</strong>${d.music}</p>
-                    <p><strong>🙏 感恩：</strong><br>${d.gratitude.replace(/\n/g, '<br>')}</p>
-                    <p><strong>✅ 完成：</strong><br>${d.done.replace(/\n/g, '<br>')}</p>
-                    <p><strong>✨ 高光：</strong><br>${d.highlight.replace(/\n/g, '<br>')}</p>
-                    <div style="background:#f9f9f9; padding:10px; border-radius:10px; font-size:14px;">
-                        📖 今日學習：<strong>${d.vocab || 'Keep going!'}</strong>
+                    <p style="font-size:14px"><strong>🎵 金曲：</strong>${d.music || '無'}</p>
+                    <div style="margin-bottom:15px">
+                        <p><strong>🍡 感恩</strong><br><small>${d.gratitude.replace(/\n/g, '<br>')}</small></p>
+                        <p><strong>🍀 完成</strong><br><small>${d.done.replace(/\n/g, '<br>')}</small></p>
+                        <p><strong>✨ 高光</strong><br><small>${d.highlight.replace(/\n/g, '<br>')}</small></p>
+                    </div>
+                    <div class="vocab-tag">
+                        📖 學習：<strong>${d.vocabObj.en}</strong> <span style="font-size:11px; color:#aaa">${d.vocabObj.kk}</span><br>
+                        <small>意思：${d.vocabObj.ch}</small>
                     </div>
                 `;
                 container.appendChild(card);
@@ -278,12 +276,28 @@
             const blob = new Blob([dataStr], {type: 'application/json'});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url; a.download = `Tell-My-Doggy-Export.json`;
+            a.href = url; a.download = `Doggy-Backup-${new Date().toLocaleDateString()}.json`;
             a.click();
         }
 
+        function importData(input) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    currentData = {...currentData, ...importedData};
+                    localStorage.setItem('doggyDiaryV4', JSON.stringify(currentData));
+                    initCalendar();
+                    alert("資料已成功還原！🐾");
+                } catch (err) {
+                    alert("匯入失敗，請確認檔案格式是否正確。");
+                }
+            };
+            if (file) reader.readAsText(file);
+        }
+
         initSelectors();
-        initCalendar();
     </script>
 </body>
 </html>
