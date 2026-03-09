@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Tell My Doggy</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -21,81 +21,106 @@
             color: var(--text-color);
             margin: 0; padding: 0;
             display: flex; flex-direction: column; align-items: center;
-            overflow-x: hidden;
+            overflow: hidden; /* 防止身體滾動，交給容器 */
+            height: 100vh;
         }
 
-        .header { text-align: center; padding: 20px 0 10px; }
-        .paw-print { font-size: 24px; color: var(--primary-blue); }
+        /* 頁首 */
+        .header { text-align: center; padding: env(safe-area-inset-top) 0 10px; width: 100%; background: var(--bg-color); z-index: 10; }
+        .paw-print { font-size: 20px; color: var(--primary-blue); }
 
-        .nav-tabs { display: flex; width: 100%; max-width: 400px; background: white; position: sticky; top: 0; z-index: 10; }
-        .tab { flex: 1; text-align: center; padding: 15px; cursor: pointer; border-bottom: 3px solid transparent; font-size: 14px; }
+        /* 分頁標籤 */
+        .nav-tabs { display: flex; width: 100%; max-width: 400px; background: white; z-index: 10; border-radius: 15px 15px 0 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.03); }
+        .tab { flex: 1; text-align: center; padding: 15px; cursor: pointer; border-bottom: 3px solid transparent; font-size: 14px; color: var(--accent-gray); }
         .tab.active { border-bottom: 3px solid var(--primary-blue); font-weight: bold; color: var(--primary-blue); }
 
-        .view-section { width: 100%; max-width: 400px; padding: 15px; box-sizing: border-box; }
-        
+        /* 主內容容器 */
+        .content-container { flex: 1; width: 100%; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
+
+        /* 月曆視圖 */
+        #cal-section { width: 100%; max-width: 400px; padding: 15px; box-sizing: border-box; display: block; overflow-y: auto; }
         .calendar-container { background: var(--card-bg); border-radius: 20px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .month-selector { margin-bottom: 15px; display: flex; justify-content: center; gap: 10px; }
         select { padding: 8px 12px; border-radius: 12px; border: 1px solid var(--primary-blue); background: white; font-size: 14px; color: var(--text-color); }
-
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
         .day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 14px; cursor: pointer; position: relative; }
         .day.has-content::after { content: '❤️'; font-size: 8px; position: absolute; bottom: 2px; }
         .day.today { background-color: var(--primary-blue); color: white; }
 
+        /* 卡片滑動模式 - 全螢幕優化 */
         #card-view {
-            display: none; width: 100vw; height: calc(100vh - 150px);
+            display: none; width: 100vw; height: 100%;
             overflow-x: auto; scroll-snap-type: x mandatory;
             white-space: nowrap; -webkit-overflow-scrolling: touch;
+            padding-bottom: env(safe-area-inset-bottom); /* 留出底部安全區 */
         }
         .flip-card {
-            display: inline-block; width: 85vw; height: 90%;
-            margin: 20px 7.5vw; background: white; border-radius: 25px;
+            display: inline-block; width: 100vw; height: 100%;
             vertical-align: top; white-space: normal; scroll-snap-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08); padding: 25px; 
-            box-sizing: border-box; overflow-y: auto; border: 1px solid #eee;
+            box-sizing: border-box; padding: 20px 25px; 
+            overflow-y: auto; /* 卡片內部可上下滾動 */
+        }
+        
+        /* 卡片內部的仿真頁面樣式 (類似圖三) */
+        .card-inner-page {
+            background: white; border-radius: 30px; 
+            height: 100%; width: 100%; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
+            border: 1px solid #eee;
+            box-sizing: border-box; padding: 30px;
+            display: flex; flex-direction: column;
         }
 
+        /* 編輯視窗 */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 100; }
         .modal-content { background: white; width: 90%; max-height: 85vh; border-radius: 25px; padding: 25px; overflow-y: auto; box-sizing: border-box; }
         label { display: block; margin-top: 15px; font-weight: bold; color: var(--primary-blue); font-size: 14px; }
-        textarea, input { width: 100%; border: 1px solid #eef2f6; border-radius: 12px; padding: 12px; margin-top: 5px; box-sizing: border-box; background: #fcfdfe; font-size: 15px; }
+        textarea, input[type="text"] { width: 100%; border: 1px solid #eef2f6; border-radius: 12px; padding: 12px; margin-top: 5px; box-sizing: border-box; background: #fcfdfe; font-size: 15px; }
         
-        .btn { background: var(--primary-blue); color: white; border: none; padding: 14px; border-radius: 20px; width: 100%; font-size: 16px; margin-top: 20px; font-weight: bold; }
+        .btn { background: var(--primary-blue); color: white; border: none; padding: 14px; border-radius: 20px; width: 100%; font-size: 16px; margin-top: 20px; font-weight: bold; cursor: pointer;}
         .secondary-btn { background: none; color: var(--accent-gray); border: 1px solid var(--accent-gray); margin-top: 10px; font-size: 12px; padding: 10px; border-radius: 15px; width: 100%; cursor: pointer; }
 
-        .vocab-tag { display: inline-block; background: #fff5f5; color: #ff8a8a; padding: 6px 14px; border-radius: 12px; font-size: 13px; margin-top: 15px; border: 1px solid #ffe3e3; width: 100%; box-sizing: border-box; }
-        .card-photo { width: 100%; border-radius: 15px; margin-bottom: 15px; object-fit: cover; max-height: 250px; }
+        /* 單字樣式更新 */
+        .vocab-tag { background: #fff5f5; color: #ff8a8a; padding: 10px 15px; border-radius: 15px; font-size: 14px; margin-top: auto; border: 1px solid #ffe3e3; }
+        .card-photo { width: 100%; border-radius: 15px; margin-bottom: 20px; object-fit: cover; max-height: 200px; }
+        
+        /* 內容區塊細節 */
+        .entry-section { margin-bottom: 15px; }
+        .entry-title { font-size: 16px; font-weight: bold; display: flex; align-items: center; gap: 8px; margin-bottom: 5px;}
+        .entry-content { font-size: 14px; color: #7a869a; line-height: 1.6; padding-left: 28px;}
     </style>
 </head>
 <body>
 
     <div class="header">
         <div class="paw-print">🐾 🐾</div>
-        <h2 style="color: var(--primary-blue); margin: 0; font-size: 20px;">Tell My Doggy</h2>
+        <div style="font-size: 12px; color: var(--accent-gray);">Tell My Doggy</div>
     </div>
 
-    <div class="nav-tabs">
-        <div class="tab active" id="tab-cal" onclick="showView('cal')">月曆回顧</div>
-        <div class="tab" id="tab-card" onclick="showView('card')">卡片滑動模式</div>
-    </div>
+    <div class="content-container">
+        <div class="nav-tabs">
+            <div class="tab active" id="tab-cal" onclick="showView('cal')">月曆回顧</div>
+            <div class="tab" id="tab-card" onclick="showView('card')">卡片滑動模式</div>
+        </div>
 
-    <div id="cal-section" class="view-section">
-        <div class="month-selector">
-            <select id="yearSel" onchange="updateMonthOptions()"></select>
-            <select id="monthSel" onchange="initCalendar()"></select>
+        <div id="cal-section">
+            <div class="month-selector">
+                <select id="yearSel" onchange="updateMonthOptions()"></select>
+                <select id="monthSel" onchange="initCalendar()"></select>
+            </div>
+            <div class="calendar-container">
+                <div class="calendar-grid" id="calendarGrid"></div>
+            </div>
+            
+            <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px;">
+                <button class="secondary-btn" onclick="exportData()">📤 匯出備份 (防紀錄不見)</button>
+                <button class="secondary-btn" onclick="document.getElementById('importFile').click()">📥 匯入/還原紀錄</button>
+                <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
+            </div>
         </div>
-        <div class="calendar-container">
-            <div class="calendar-grid" id="calendarGrid"></div>
-        </div>
-        
-        <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
-            <button class="secondary-btn" onclick="exportData()">📤 匯出備份 (防紀錄不見)</button>
-            <button class="secondary-btn" onclick="document.getElementById('importFile').click()">📥 匯入/還原紀錄</button>
-            <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
-        </div>
-    </div>
 
-    <div id="card-view"></div>
+        <div id="card-view"></div>
+    </div>
 
     <div id="editorModal" class="modal">
         <div class="modal-content">
@@ -123,24 +148,24 @@
     </div>
 
     <script>
-        let currentData = JSON.parse(localStorage.getItem('doggyDiaryV4')) || {};
+        let currentData = JSON.parse(localStorage.getItem('doggyDiaryV5')) || {};
         let editingDate = '';
         let tempPhoto = '';
 
+        // 更新為 IPA 國際音標
         const vocabs = [
-            {en: "Serendipity", kk: "/ˌserənˈdipədē/", ch: "不期而遇的美好"},
-            {en: "Luminous", kk: "/ˈlo͞omənəs/", ch: "發光的 / 明亮的"},
-            {en: "Brave", kk: "/brāv/", ch: "勇敢的"},
-            {en: "Cherish", kk: "/ˈtʃer.ɪʃ/", ch: "珍愛 / 珍惜"},
-            {en: "Euphoria", kk: "/juːˈfɔːr.i.ə/", ch: "極度愉快"},
-            {en: "Bloom", kk: "/bluːm/", ch: "盛開"},
-            {en: "Comfort", kk: "/ˈkʌm.fət/", ch: "安慰 / 舒適"},
-            {en: "Vibrant", kk: "/ˈvaɪ.brənt/", ch: "充滿活力的"}
+            {en: "Serendipity", kk: "[ˌserənˈdɪpəti]", ch: "不期而遇的美好"},
+            {en: "Luminous", kk: "[ˈluːmɪnəs]", ch: "發光的 / 明亮的"},
+            {en: "Brave", kk: "[breɪv]", ch: "勇敢的"},
+            {en: "Cherish", kk: "[ˈtʃerɪʃ]", ch: "珍愛 / 珍惜"},
+            {en: "Euphoria", kk: "[juːˈfɔːriə]", ch: "極度愉快"},
+            {en: "Bloom", kk: "[bluːm]", ch: "盛開"},
+            {en: "Comfort", kk: "[ˈkʌmfət]", ch: "安慰 / 舒適"},
+            {en: "Vibrant", kk: "[ˈvaɪbrənt]", ch: "充滿活力的"}
         ];
 
         function initSelectors() {
             const yearSel = document.getElementById('yearSel');
-            const currentYear = new Date().getFullYear();
             yearSel.add(new Option("2026年", 2026));
             yearSel.add(new Option("2027年", 2027));
             yearSel.value = 2026;
@@ -150,13 +175,16 @@
         function updateMonthOptions() {
             const year = document.getElementById('yearSel').value;
             const monthSel = document.getElementById('monthSel');
+            const currentMonth = monthSel.value; // 記住當前選擇
             monthSel.innerHTML = '';
             
-            // 2026年從3月開始，2027年從1月開始
             const startMonth = (year == "2026") ? 2 : 0; 
             for(let m = startMonth; m < 12; m++) {
                 monthSel.add(new Option((m + 1) + '月', m));
             }
+            
+            // 嘗試恢復之前的選擇，如果新年份沒有該月份，則選第一個
+            monthSel.value = (currentMonth >= startMonth && currentMonth < 12) ? currentMonth : startMonth;
             initCalendar();
         }
 
@@ -209,9 +237,7 @@
 
         function saveData() {
             let vocabObj = currentData[editingDate]?.vocabObj;
-            if (!vocabObj) {
-                vocabObj = vocabs[Math.floor(Math.random() * vocabs.length)];
-            }
+            if (!vocabObj) {vocabObj = vocabs[Math.floor(Math.random() * vocabs.length)];}
 
             currentData[editingDate] = {
                 music: document.getElementById('music').value,
@@ -221,9 +247,8 @@
                 photo: tempPhoto,
                 vocabObj: vocabObj
             };
-            localStorage.setItem('doggyDiaryV4', JSON.stringify(currentData));
+            localStorage.setItem('doggyDiaryV5', JSON.stringify(currentData));
             initCalendar();
-            renderCards();
             alert(`儲存成功！🐾\n今日單字：${vocabObj.en} ${vocabObj.kk}`);
             closeModal();
         }
@@ -234,7 +259,7 @@
             const sortedDates = Object.keys(currentData).sort((a,b) => new Date(b) - new Date(a));
             
             if(sortedDates.length === 0) {
-                container.innerHTML = "<div class='flip-card'><h3>目前還沒有日記喔</h3><p>回到月曆點擊日期開始寫吧！🐾</p></div>";
+                container.innerHTML = "<div class='flip-card'><div class='card-inner-page'><h3>目前還沒有日記喔</h3><p>回到月曆點擊日期開始寫吧！🐾</p></div></div>";
                 return;
             }
 
@@ -242,19 +267,41 @@
                 const d = currentData[date];
                 const card = document.createElement('div');
                 card.className = 'flip-card';
+                
+                // 卡片內部仿真頁面佈局，移除了 Tell My Doggy，優化內容呈現
                 card.innerHTML = `
-                    <div style="font-size:12px; color:var(--accent-gray)">${date}</div>
-                    <h3 style="margin: 5px 0 15px 0; color:var(--primary-blue)">Tell My Doggy 🐾</h3>
-                    ${d.photo ? `<img src="${d.photo}" class="card-photo">` : ''}
-                    <p style="font-size:14px"><strong>🎵 金曲：</strong>${d.music || '無'}</p>
-                    <div style="margin-bottom:15px">
-                        <p><strong>🍡 感恩</strong><br><small>${d.gratitude.replace(/\n/g, '<br>')}</small></p>
-                        <p><strong>🍀 完成</strong><br><small>${d.done.replace(/\n/g, '<br>')}</small></p>
-                        <p><strong>✨ 高光</strong><br><small>${d.highlight.replace(/\n/g, '<br>')}</small></p>
-                    </div>
-                    <div class="vocab-tag">
-                        📖 學習：<strong>${d.vocabObj.en}</strong> <span style="font-size:11px; color:#aaa">${d.vocabObj.kk}</span><br>
-                        <small>意思：${d.vocabObj.ch}</small>
+                    <div class="card-inner-page">
+                        <div style="font-size:16px; font-weight:bold; color:var(--primary-blue); margin-bottom: 20px; display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:20px;">📅</span> ${date}
+                        </div>
+                        
+                        ${d.photo ? `<img src="${d.photo}" class="card-photo">` : ''}
+                        
+                        <div class="entry-section">
+                            <div class="entry-title">🎵 金曲</div>
+                            <div class="entry-content">${d.music || '未填寫'}</div>
+                        </div>
+
+                        <div class="entry-section">
+                            <div class="entry-title">🍡 感恩</div>
+                            <div class="entry-content">${d.gratitude ? d.gratitude.replace(/\n/g, '<br>') : '未填寫'}</div>
+                        </div>
+
+                        <div class="entry-section">
+                            <div class="entry-title">🍀 完成</div>
+                            <div class="entry-content">${d.done ? d.done.replace(/\n/g, '<br>') : '未填寫'}</div>
+                        </div>
+
+                        <div class="entry-section">
+                            <div class="entry-title">✨ 高光</div>
+                            <div class="entry-content">${d.highlight ? d.highlight.replace(/\n/g, '<br>') : '未填寫'}</div>
+                        </div>
+
+                        <div class="vocab-tag">
+                            <strong>📖 ${d.vocabObj.en}</strong> 
+                            <span style="font-size:12px; color:#aaa; margin-left:5px;">${d.vocabObj.kk}</span><br>
+                            <small>意思：${d.vocabObj.ch}</small>
+                        </div>
                     </div>
                 `;
                 container.appendChild(card);
@@ -266,7 +313,15 @@
             document.getElementById('card-view').style.display = type === 'card' ? 'flex' : 'none';
             document.getElementById('tab-cal').className = type === 'cal' ? 'tab active' : 'tab';
             document.getElementById('tab-card').className = type === 'card' ? 'tab active' : 'tab';
-            if(type === 'card') renderCards();
+            
+            // 切換到卡片模式時，隱轉頁首和頁尾按鈕，專注滑動
+            const header = document.querySelector('.header');
+            if (type === 'card') {
+                header.style.display = 'none';
+                renderCards();
+            } else {
+                header.style.display = 'block';
+            }
         }
 
         function closeModal() { document.getElementById('editorModal').style.display = 'none'; }
@@ -287,12 +342,10 @@
                 try {
                     const importedData = JSON.parse(e.target.result);
                     currentData = {...currentData, ...importedData};
-                    localStorage.setItem('doggyDiaryV4', JSON.stringify(currentData));
+                    localStorage.setItem('doggyDiaryV5', JSON.stringify(currentData));
                     initCalendar();
                     alert("資料已成功還原！🐾");
-                } catch (err) {
-                    alert("匯入失敗，請確認檔案格式是否正確。");
-                }
+                } catch (err) { alert("匯入失敗，請確認檔案格式是否正確。"); }
             };
             if (file) reader.readAsText(file);
         }
@@ -301,3 +354,4 @@
     </script>
 </body>
 </html>
+
