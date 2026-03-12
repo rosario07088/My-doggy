@@ -3,108 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>牛馬生存進度計算器</title>
+    <title>高級莫蘭迪牛馬日記</title>
     <style>
-        body { font-family: sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        h2 { color: #333; text-align: center; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
-        input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        .result-box { background: #e7f3ff; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: center; }
-        .highlight { font-size: 1.5em; color: #007bff; font-weight: bold; }
-        .footer { font-size: 0.8em; color: #888; text-align: center; margin-top: 20px; }
+        :root {
+            --bg-color: #dee4e7;
+            --primary-blue: #9eb8c0;
+            --accent-pink: #d8b4b4;
+            --text-color: #5a6b73;
+            --card-bg: #f7f9fb;
+        }
+        body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 10px; }
+        .container { max-width: 500px; margin: auto; }
+        
+        /* Tab Styles */
+        .tabs { display: flex; justify-content: center; margin-bottom: 20px; gap: 10px; }
+        .tab-btn { padding: 10px 20px; border: none; background: var(--primary-blue); color: white; border-radius: 20px; cursor: pointer; opacity: 0.7; transition: 0.3s; }
+        .tab-btn.active { opacity: 1; font-weight: bold; background: var(--accent-pink); }
+        .page { display: none; }
+        .page.active { display: block; }
+
+        .card { background: var(--card-bg); padding: 25px; border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+        h2 { text-align: center; color: var(--text-color); margin-top: 0; font-size: 1.2em; }
+        
+        .input-group { margin-bottom: 12px; }
+        label { display: block; font-size: 0.85em; margin-bottom: 4px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #c8d1d6; border-radius: 10px; background: white; color: var(--text-color); box-sizing: border-box; font-size: 14px; }
+        
+        .result-box { background: var(--primary-blue); color: white; padding: 20px; border-radius: 15px; text-align: center; margin-top: 15px; }
+        .highlight { font-size: 2em; font-weight: bold; display: block; margin: 5px 0; }
+        .status-tag { font-size: 0.85em; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 5px; }
+
+        /* Calendar Styles */
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 10px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
+        .day-label { font-size: 0.75em; font-weight: bold; padding: 5px; color: #888; }
+        .day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; border-radius: 8px; font-size: 0.85em; cursor: pointer; position: relative; border: 1px solid #eee; transition: 0.2s; }
+        .day.has-note::after { content: '💰'; position: absolute; bottom: 2px; right: 2px; font-size: 12px; }
+        .day:hover { background: var(--bg-color); border-color: var(--primary-blue); }
+        
+        #diaryEntry { margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 15px; display: none; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>🐂🐎 牛馬計算器</h2>
-    
-    <div class="input-group">
-        <label>做牛做馬開始時間</label>
-        <input type="time" id="startTime" value="09:00">
-    </div>
-    
-    <div class="input-group">
-        <label>牛馬解放時間</label>
-        <input type="time" id="endTime" value="21:00">
-    </div>
-    
-    <div class="input-group">
-        <label>牛馬酬勞 (時薪)</label>
-        <input type="number" id="hourlyRate" value="196">
+<div class="container">
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showPage('calcPage')">牛馬計算機</button>
+        <button class="tab-btn" onclick="showPage('diaryPage')">牛馬日記</button>
     </div>
 
-    <div class="input-group">
-        <label>想換算的東西 (如：珍珠奶茶)</label>
-        <input type="text" id="itemName" value="珍珠奶茶">
-    </div>
+    <div id="calcPage" class="page active">
+        <div class="card">
+            <h2>⏳ 莫蘭迪勞動計時</h2>
+            <div class="input-group">
+                <label>做牛做馬開始時間</label>
+                <input type="time" id="startTime" value="09:00">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <div class="input-group" style="flex: 1;">
+                    <label>休息開始</label>
+                    <input type="time" id="breakStart" value="12:00">
+                </div>
+                <div class="input-group" style="flex: 1;">
+                    <label>休息結束</label>
+                    <input type="time" id="breakEnd" value="13:00">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>牛馬解放時間</label>
+                <input type="time" id="endTime" value="21:00">
+            </div>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+            <div class="input-group">
+                <label>牛馬酬勞 (時薪)</label>
+                <input type="number" id="hourlyRate" value="196">
+            </div>
+            <div class="input-group">
+                <label>想換算的物品 / 單價</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="itemName" value="珍珠奶茶" style="flex: 2;">
+                    <input type="number" id="itemPrice" value="60" style="flex: 1;">
+                </div>
+            </div>
 
-    <div class="input-group">
-        <label>該物品單價</label>
-        <input type="number" id="itemPrice" value="60">
-    </div>
-
-    <div class="result-box">
-        <div id="statusText">目前奮鬥中...</div>
-        <div style="margin-top: 10px;">
-            已賺到 <span id="itemCount" class="highlight">0</span> <span id="displayItemName">珍珠奶茶</span>
+            <div class="result-box">
+                <div class="status-tag" id="statusText">偵測中...</div>
+                <span class="highlight"><span id="itemCount">0</span> <small id="displayItemName" style="font-size: 0.5em;">杯</small></span>
+                <small>目前實領價值</small>
+            </div>
         </div>
-        <div style="font-size: 0.9em; margin-top: 5px; color: #666;">
-            (總計可領：$<span id="totalPay">0</span>)
-        </div>
     </div>
 
-    <div class="footer">每秒更新一次，距離解放更近一步</div>
+    <div id="diaryPage" class="page">
+        <div class="card">
+            <h2>📖 牛馬生存紀錄</h2>
+            <div class="calendar-header">
+                <button onclick="changeMonth(-1)" style="border:none; background:none; cursor:pointer; font-size: 1.2em;">◀</button>
+                <strong id="currentMonthYear"></strong>
+                <button onclick="changeMonth(1)" style="border:none; background:none; cursor:pointer; font-size: 1.2em;">▶</button>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+
+            <div id="diaryEntry">
+                <h4 id="selectedDateText" style="margin-bottom: 10px;"></h4>
+                <textarea id="diaryText" rows="4" placeholder="今天當牛馬的心情如何..."></textarea>
+                <button onclick="saveNote()" style="margin-top:10px; background:var(--accent-pink); color:white; border:none; padding:12px; width:100%; border-radius:10px; cursor:pointer; font-weight: bold;">記錄今日勞動 (💰)</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-    function updateCalculator() {
-        const startTimeStr = document.getElementById('startTime').value;
-        const endTimeStr = document.getElementById('endTime').value;
-        const hourlyRate = parseFloat(document.getElementById('hourlyRate').value);
-        const itemName = document.getElementById('itemName').value;
-        const itemPrice = parseFloat(document.getElementById('itemPrice').value);
-        
-        document.getElementById('displayItemName').innerText = itemName;
-
-        const now = new Date();
-        const start = new Date();
-        const end = new Date();
-
-        const [sH, sM] = startTimeStr.split(':');
-        const [eH, eM] = endTimeStr.split(':');
-
-        start.setHours(sH, sM, 0);
-        end.setHours(eH, eM, 0);
-
-        // 處理跨夜情況
-        if (end < start) end.setDate(end.getDate() + 1);
-
-        let totalSeconds = (end - start) / 1000;
-        let elapsedSeconds = (now - start) / 1000;
-
-        if (elapsedSeconds < 0) {
-            document.getElementById('statusText').innerText = "尚未開始上班";
-            elapsedSeconds = 0;
-        } else if (elapsedSeconds > totalSeconds) {
-            document.getElementById('statusText').innerText = "🎉 恭喜解放！";
-            elapsedSeconds = totalSeconds;
-        } else {
-            document.getElementById('statusText').innerText = "⚒️ 正在努力拉磨中...";
-        }
-
-        const currentEarned = (elapsedSeconds / 3600) * hourlyRate;
-        const totalPay = (totalSeconds / 3600) * hourlyRate;
-        const items = (currentEarned / itemPrice).toFixed(2);
-
-        document.getElementById('itemCount').innerText = items;
-        document.getElementById('totalPay').innerText = Math.floor(totalPay);
+    // --- 切換分頁 ---
+    function showPage(id) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        event.currentTarget.classList.add('active');
     }
 
-    setInterval(updateCalculator, 1000);
-    updateCalculator();
+    // --- 計算機邏輯 (精確扣除休息時間) ---
+    function updateCalc() {
+        const getFullDate = (timeStr) => {
+            const [h, m] = timeStr.split(':');
+            const d = new Date(); d.setHours(h, m, 0, 0); return d;
+        };
+
+        const start = getFullDate(document.getElementById('startTime').value);
+        const brkStart = getFullDate(document.getElementById('breakStart').value);
+        const brkEnd = getFullDate(document.getElementById('breakEnd').value);
+        const end = getFullDate(document.getElementById('endTime').value);
+        const now = new Date();
+        const rate = parseFloat(document.getElementById('hourlyRate').value);
+        const price = parseFloat(document.getElementById('itemPrice').value);
+        
+        let earned = 0;
+
+        // 計算邏輯：只算工作時間
+        if (now > start) {
+            // 第一階段：上班開始到 休息前
+            let firstPeriod = Math.min(now, brkStart) - start;
+            if (firstPeriod < 0) firstPeriod = 0;
+
+            // 第二階段：休息結束到 現在（或解放時間）
+            let secondPeriod = 0;
+            if (now > brkEnd) {
+                secondPeriod = Math.min(now, end) - brkEnd;
+            }
+            if (secondPeriod < 0) secondPeriod = 0;
+
+            const totalWorkMs = firstPeriod + secondPeriod;
+            earned = (totalWorkMs / 3600000) * rate;
+        }
+
+        document.getElementById('itemCount').innerText = (earned / price).toFixed(2);
+        document.getElementById('displayItemName').innerText = document.getElementById('itemName').value;
+        
+        // 狀態顯示
+        let status = "";
+        if (now < start) status = "尚未開工";
+        else if (now >= brkStart && now <= brkEnd) status = "🍱 休息中 (不計薪)";
+        else if (now > end) status = "🎉 已解放！";
+        else status = "⚒️ 正在努力賺錢中";
+        
+        document.getElementById('statusText').innerText = status;
+    }
+    setInterval(updateCalc, 1000);
+
+    // --- 日記與月曆邏輯 ---
+    let currentMonth = 2; // 3月
+    let currentYear = 2026;
+    let notes = JSON.parse(localStorage.getItem('cow_horse_notes') || '{}');
+    let selectedDate = '';
+
+    function renderCalendar() {
+        const grid = document.getElementById('calendarGrid');
+        const title = document.getElementById('currentMonthYear');
+        grid.innerHTML = '';
+        title.innerText = `${currentYear}年 ${currentMonth + 1}月`;
+
+        const days = ['日', '一', '二', '三', '四', '五', '六'];
+        days.forEach(d => grid.innerHTML += `<div class="day-label">${d}</div>`);
+
+        const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+        const totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+        for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div></div>`;
+
+        for (let d = 1; d <= totalDays; d++) {
+            const dateKey = `${currentYear}-${currentMonth + 1}-${d}`;
+            const hasNote = notes[dateKey] ? 'has-note' : '';
+            grid.innerHTML += `<div class="day ${hasNote}" onclick="openNote('${dateKey}')">${d}</div>`;
+        }
+    }
+
+    function changeMonth(step) {
+        currentMonth += step;
+        if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+        if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+        renderCalendar();
+    }
+
+    function openNote(date) {
+        selectedDate = date;
+        document.getElementById('diaryEntry').style.display = 'block';
+        document.getElementById('selectedDateText').innerText = date + ' 的日記';
+        document.getElementById('diaryText').value = notes[date] || '';
+    }
+
+    function saveNote() {
+        notes[selectedDate] = document.getElementById('diaryText').value;
+        localStorage.setItem('cow_horse_notes', JSON.stringify(notes));
+        renderCalendar();
+        alert('筆記已儲存 💰');
+    }
+
+    renderCalendar();
 </script>
 
 </body>
