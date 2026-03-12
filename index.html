@@ -2,248 +2,110 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Tell My Doggy</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>牛馬生存進度計算器</title>
     <style>
-        :root {
-            --bg-color: #f0f4f7;
-            --primary-blue: #a3bacf;
-            --accent-gray: #8e9aaf;
-            --card-bg: #ffffff;
-            --text-color: #5a6772;
-        }
-
-        body {
-            font-family: 'Noto Sans TC', sans-serif;
-            background-color: var(--bg-color);
-            margin: 0; padding: 0;
-            overflow: hidden; /* 防止全頁滾動，改用容器滾動 */
-            height: 100vh;
-        }
-
-        /* 頁首 */
-        .header { text-align: center; padding: 15px 0 5px; background: var(--bg-color); width: 100%; }
-        .paw-print { font-size: 18px; color: var(--primary-blue); }
-
-        /* 分頁切換 */
-        .nav-tabs { display: flex; width: 100%; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .tab { flex: 1; text-align: center; padding: 15px; cursor: pointer; font-size: 14px; color: var(--accent-gray); transition: 0.3s; }
-        .tab.active { color: var(--primary-blue); font-weight: bold; border-bottom: 3px solid var(--primary-blue); }
-
-        /* 月曆容器 */
-        #cal-section { padding: 20px; height: calc(100vh - 120px); overflow-y: auto; box-sizing: border-box; }
-        .calendar-container { background: white; border-radius: 20px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 15px; }
-        .day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 14px; cursor: pointer; }
-        .day.has-content { position: relative; }
-        .day.has-content::after { content: '❤️'; font-size: 8px; position: absolute; bottom: 2px; }
-        .day.today { background: var(--primary-blue); color: white; }
-
-        /* ⭐ 重點：卡片滑動視圖 */
-        #card-view {
-            display: none; 
-            width: 100vw; 
-            height: 100vh; /* 撐滿全螢幕 */
-            overflow-x: auto; 
-            scroll-snap-type: x mandatory; /* 強制分頁對齊 */
-            white-space: nowrap; 
-            -webkit-overflow-scrolling: touch;
-            background: #f8f9fa;
-        }
-        
-        .flip-card {
-            display: inline-block;
-            width: 100vw; /* 每一張寬度等於螢幕 */
-            height: 100vh;
-            vertical-align: top;
-            scroll-snap-align: start; /* 對齊起點 */
-            box-sizing: border-box;
-            padding: 40px 25px 80px; /* 留出上下間距 */
-            white-space: normal;
-        }
-
-        .card-inner-page {
-            background: white;
-            width: 100%;
-            height: 100%;
-            border-radius: 35px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
-            border: 1px solid #eee;
-            padding: 35px 25px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        .card-date { font-size: 18px; font-weight: bold; color: var(--primary-blue); margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
-        .card-photo { width: 100%; border-radius: 20px; margin-bottom: 20px; object-fit: cover; max-height: 220px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-
-        .entry-item { margin-bottom: 20px; }
-        .entry-label { font-weight: bold; font-size: 15px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
-        .entry-text { font-size: 14px; color: #666; line-height: 1.6; padding-left: 26px; }
-
-        /* 國際音標標籤 */
-        .vocab-box {
-            margin-top: auto; /* 推到底部 */
-            background: #fffafa;
-            border: 1px solid #ffe8e8;
-            padding: 15px;
-            border-radius: 20px;
-        }
-        .vocab-word { font-weight: bold; color: #ff8a8a; font-size: 16px; }
-        .vocab-ipa { font-size: 12px; color: #bbb; margin-left: 6px; font-family: sans-serif; }
-
-        /* 退出卡片模式按鈕 */
-        .exit-btn { position: absolute; top: 20px; right: 20px; background: #eee; border: none; padding: 8px 15px; border-radius: 15px; font-size: 12px; color: #999; }
-
-        /* 編輯彈窗 */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); justify-content: center; align-items: center; z-index: 100; }
-        .modal-content { background: white; width: 90%; max-height: 85vh; border-radius: 25px; padding: 25px; overflow-y: auto; box-sizing: border-box; }
-        textarea, input[type="text"] { width: 100%; border: 1px solid #f0f0f0; border-radius: 12px; padding: 12px; margin-top: 5px; box-sizing: border-box; background: #fafafa; font-size: 15px; }
-        .btn { background: var(--primary-blue); color: white; border: none; padding: 15px; border-radius: 20px; width: 100%; font-size: 16px; margin-top: 15px; font-weight: bold; }
+        body { font-family: sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h2 { color: #333; text-align: center; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        .result-box { background: #e7f3ff; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: center; }
+        .highlight { font-size: 1.5em; color: #007bff; font-weight: bold; }
+        .footer { font-size: 0.8em; color: #888; text-align: center; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-    <div class="header" id="mainHeader">
-        <div class="paw-print">🐾 🐾</div>
-        <div style="font-size: 10px; color: #ccc;">Tell My Doggy</div>
+<div class="card">
+    <h2>🐂🐎 牛馬計算器</h2>
+    
+    <div class="input-group">
+        <label>做牛做馬開始時間</label>
+        <input type="time" id="startTime" value="09:00">
+    </div>
+    
+    <div class="input-group">
+        <label>牛馬解放時間</label>
+        <input type="time" id="endTime" value="21:00">
+    </div>
+    
+    <div class="input-group">
+        <label>牛馬酬勞 (時薪)</label>
+        <input type="number" id="hourlyRate" value="196">
     </div>
 
-    <div class="nav-tabs" id="mainTabs">
-        <div class="tab active" id="tab-cal" onclick="showView('cal')">月曆回顧</div>
-        <div class="tab" id="tab-card" onclick="showView('card')">卡片滑動模式</div>
+    <div class="input-group">
+        <label>想換算的東西 (如：珍珠奶茶)</label>
+        <input type="text" id="itemName" value="珍珠奶茶">
     </div>
 
-    <div id="cal-section">
-        <div class="calendar-container">
-            <div style="text-align:center; font-weight:bold; color:var(--primary-blue);">2026年 3月</div>
-            <div class="calendar-grid" id="calendarGrid"></div>
+    <div class="input-group">
+        <label>該物品單價</label>
+        <input type="number" id="itemPrice" value="60">
+    </div>
+
+    <div class="result-box">
+        <div id="statusText">目前奮鬥中...</div>
+        <div style="margin-top: 10px;">
+            已賺到 <span id="itemCount" class="highlight">0</span> <span id="displayItemName">珍珠奶茶</span>
         </div>
-        <button class="btn" style="background:none; color:var(--accent-gray); border:1px solid #ddd; font-size:12px;" onclick="exportData()">📤 匯出備份</button>
-        <button class="btn" style="background:none; color:var(--accent-gray); border:1px solid #ddd; font-size:12px; margin-top:8px;" onclick="document.getElementById('importFile').click()">📥 匯入紀錄</button>
-        <input type="file" id="importFile" style="display:none" onchange="importData(this)">
-    </div>
-
-    <div id="card-view"></div>
-
-    <div id="editorModal" class="modal">
-        <div class="modal-content">
-            <h3 id="selectedDateText">日期</h3>
-            <label>🎵 每日金曲</label><input type="text" id="music">
-            <label>📷 照片</label><input type="file" accept="image/*" onchange="handlePhoto(this)">
-            <div id="photoPreview"></div>
-            <label>🍡 三個感恩</label><textarea id="gratitude" rows="3"></textarea>
-            <label>🍀 三個完成</label><textarea id="done" rows="3"></textarea>
-            <label>✨ 高光時刻</label><textarea id="highlight" rows="3"></textarea>
-            <button class="btn" onclick="saveData()">儲存美好時刻 ✨</button>
-            <button class="btn" style="background:#eee; color:#999;" onclick="closeModal()">關閉</button>
+        <div style="font-size: 0.9em; margin-top: 5px; color: #666;">
+            (總計可領：$<span id="totalPay">0</span>)
         </div>
     </div>
 
-    <script>
-        let currentData = JSON.parse(localStorage.getItem('doggyDiaryV6')) || {};
-        let tempPhoto = '';
-        const vocabs = [
-            {en: "Serendipity", kk: "[ˌserənˈdɪpəti]", ch: "不期而遇的美好"},
-            {en: "Luminous", kk: "[ˈluːmɪnəs]", ch: "明亮耀眼的"},
-            {en: "Cherish", kk: "[ˈtʃerɪʃ]", ch: "珍愛珍惜"},
-            {en: "Vibrant", kk: "[ˈvaɪbrənt]", ch: "充滿活力的"}
-        ];
+    <div class="footer">每秒更新一次，距離解放更近一步</div>
+</div>
 
-        function initCalendar() {
-            const grid = document.getElementById('calendarGrid');
-            grid.innerHTML = '';
-            for (let i = 1; i <= 31; i++) {
-                const date = `2026-3-${i}`;
-                const day = document.createElement('div');
-                day.className = 'day' + (currentData[date] ? ' has-content' : '');
-                day.innerText = i;
-                day.onclick = () => openEditor(date);
-                grid.appendChild(day);
-            }
+<script>
+    function updateCalculator() {
+        const startTimeStr = document.getElementById('startTime').value;
+        const endTimeStr = document.getElementById('endTime').value;
+        const hourlyRate = parseFloat(document.getElementById('hourlyRate').value);
+        const itemName = document.getElementById('itemName').value;
+        const itemPrice = parseFloat(document.getElementById('itemPrice').value);
+        
+        document.getElementById('displayItemName').innerText = itemName;
+
+        const now = new Date();
+        const start = new Date();
+        const end = new Date();
+
+        const [sH, sM] = startTimeStr.split(':');
+        const [eH, eM] = endTimeStr.split(':');
+
+        start.setHours(sH, sM, 0);
+        end.setHours(eH, eM, 0);
+
+        // 處理跨夜情況
+        if (end < start) end.setDate(end.getDate() + 1);
+
+        let totalSeconds = (end - start) / 1000;
+        let elapsedSeconds = (now - start) / 1000;
+
+        if (elapsedSeconds < 0) {
+            document.getElementById('statusText').innerText = "尚未開始上班";
+            elapsedSeconds = 0;
+        } else if (elapsedSeconds > totalSeconds) {
+            document.getElementById('statusText').innerText = "🎉 恭喜解放！";
+            elapsedSeconds = totalSeconds;
+        } else {
+            document.getElementById('statusText').innerText = "⚒️ 正在努力拉磨中...";
         }
 
-        function openEditor(date) {
-            editingDate = date;
-            document.getElementById('selectedDateText').innerText = date;
-            const saved = currentData[date] || {};
-            document.getElementById('music').value = saved.music || '';
-            document.getElementById('gratitude').value = saved.gratitude || '';
-            document.getElementById('done').value = saved.done || '';
-            document.getElementById('highlight').value = saved.highlight || '';
-            tempPhoto = saved.photo || '';
-            document.getElementById('editorModal').style.display = 'flex';
-        }
+        const currentEarned = (elapsedSeconds / 3600) * hourlyRate;
+        const totalPay = (totalSeconds / 3600) * hourlyRate;
+        const items = (currentEarned / itemPrice).toFixed(2);
 
-        function saveData() {
-            let vocab = currentData[editingDate]?.vocab || vocabs[Math.floor(Math.random()*vocabs.length)];
-            currentData[editingDate] = {
-                music: document.getElementById('music').value,
-                gratitude: document.getElementById('gratitude').value,
-                done: document.getElementById('done').value,
-                highlight: document.getElementById('highlight').value,
-                photo: tempPhoto,
-                vocab: vocab
-            };
-            localStorage.setItem('doggyDiaryV6', JSON.stringify(currentData));
-            initCalendar();
-            closeModal();
-        }
+        document.getElementById('itemCount').innerText = items;
+        document.getElementById('totalPay').innerText = Math.floor(totalPay);
+    }
 
-        function showView(type) {
-            const isCard = (type === 'card');
-            document.getElementById('cal-section').style.display = isCard ? 'none' : 'block';
-            document.getElementById('card-view').style.display = isCard ? 'flex' : 'none';
-            document.getElementById('mainHeader').style.display = isCard ? 'none' : 'block';
-            document.getElementById('mainTabs').style.display = isCard ? 'none' : 'flex';
-            
-            if(isCard) renderCards();
-        }
+    setInterval(updateCalculator, 1000);
+    updateCalculator();
+</script>
 
-        function renderCards() {
-            const view = document.getElementById('card-view');
-            view.innerHTML = '';
-            const dates = Object.keys(currentData).sort((a,b) => new Date(b) - new Date(a));
-            
-            if(dates.length === 0) {
-                view.innerHTML = `<div class="flip-card"><div class="card-inner-page"><h3>還沒有紀錄喔 🐾</h3><button class="btn" onclick="showView('cal')">返回月曆</button></div></div>`;
-                return;
-            }
-
-            dates.forEach(date => {
-                const d = currentData[date];
-                const card = document.createElement('div');
-                card.className = 'flip-card';
-                card.innerHTML = `
-                    <div class="card-inner-page">
-                        <button class="exit-btn" onclick="showView('cal')">離開</button>
-                        <div class="card-date">📅 ${date}</div>
-                        ${d.photo ? `<img src="${d.photo}" class="card-photo">` : ''}
-                        <div class="entry-item"><div class="entry-label">🎵 金曲</div><div class="entry-text">${d.music || '未填寫'}</div></div>
-                        <div class="entry-item"><div class="entry-label">🍡 感恩</div><div class="entry-text">${d.gratitude || '未填寫'}</div></div>
-                        <div class="entry-item"><div class="entry-label">🍀 完成</div><div class="entry-text">${d.done || '未填寫'}</div></div>
-                        <div class="entry-item"><div class="entry-label">✨ 高光</div><div class="entry-text">${d.highlight || '未填寫'}</div></div>
-                        <div class="vocab-box">
-                            <span class="vocab-word">📖 ${d.vocab.en}</span>
-                            <span class="vocab-ipa">${d.vocab.kk}</span><br>
-                            <small style="color:#aaa">意思：${d.vocab.ch}</small>
-                        </div>
-                    </div>
-                `;
-                view.appendChild(card);
-            });
-        }
-
-        function handlePhoto(input) {
-            const reader = new FileReader();
-            reader.onload = e => tempPhoto = e.target.result;
-            if(input.files[0]) reader.readAsDataURL(input.files[0]);
-        }
-        function closeModal() { document.getElementById('editorModal').style.display = 'none'; }
-        initCalendar();
-    </script>
 </body>
 </html>
