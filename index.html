@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>高級莫蘭迪牛馬日記</title>
+    <title>牛馬生存日記</title>
     <style>
         :root {
             --bg-color: #dee4e7;
@@ -15,7 +15,6 @@
         body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 10px; }
         .container { max-width: 500px; margin: auto; }
         
-        /* Tab Styles */
         .tabs { display: flex; justify-content: center; margin-bottom: 20px; gap: 10px; }
         .tab-btn { padding: 10px 20px; border: none; background: var(--primary-blue); color: white; border-radius: 20px; cursor: pointer; opacity: 0.7; transition: 0.3s; }
         .tab-btn.active { opacity: 1; font-weight: bold; background: var(--accent-pink); }
@@ -31,7 +30,7 @@
         
         .result-box { background: var(--primary-blue); color: white; padding: 20px; border-radius: 15px; text-align: center; margin-top: 15px; }
         .highlight { font-size: 2em; font-weight: bold; display: block; margin: 5px 0; }
-        .status-tag { font-size: 0.85em; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 5px; }
+        .status-tag { font-size: 0.85em; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 8px; margin-bottom: 5px; display: inline-block; }
 
         /* Calendar Styles */
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 10px; }
@@ -54,19 +53,19 @@
 
     <div id="calcPage" class="page active">
         <div class="card">
-            <h2>⏳ 莫蘭迪勞動計時</h2>
+            <h2>⏳ 牛馬計時器</h2>
             <div class="input-group">
                 <label>做牛做馬開始時間</label>
-                <input type="time" id="startTime" value="09:00">
+                <input type="time" id="startTime" value="13:00">
             </div>
             <div style="display: flex; gap: 10px;">
                 <div class="input-group" style="flex: 1;">
                     <label>休息開始</label>
-                    <input type="time" id="breakStart" value="12:00">
+                    <input type="time" id="breakStart" value="18:00">
                 </div>
                 <div class="input-group" style="flex: 1;">
                     <label>休息結束</label>
-                    <input type="time" id="breakEnd" value="13:00">
+                    <input type="time" id="breakEnd" value="19:00">
                 </div>
             </div>
             <div class="input-group">
@@ -81,15 +80,15 @@
             <div class="input-group">
                 <label>想換算的物品 / 單價</label>
                 <div style="display: flex; gap: 8px;">
-                    <input type="text" id="itemName" value="珍珠奶茶" style="flex: 2;">
-                    <input type="number" id="itemPrice" value="60" style="flex: 1;">
+                    <input type="text" id="itemName" placeholder="例如：珍珠奶茶" style="flex: 2;">
+                    <input type="number" id="itemPrice" placeholder="單價" style="flex: 1;">
                 </div>
             </div>
 
             <div class="result-box">
                 <div class="status-tag" id="statusText">偵測中...</div>
-                <span class="highlight"><span id="itemCount">0</span> <small id="displayItemName" style="font-size: 0.5em;">杯</small></span>
-                <small>目前實領價值</small>
+                <span class="highlight"><span id="itemCount">0</span> <small id="displayItemName" style="font-size: 0.5em;"></small></span>
+                <small id="bottomLabel">目前實領價值</small>
             </div>
         </div>
     </div>
@@ -114,7 +113,6 @@
 </div>
 
 <script>
-    // --- 切換分頁 ---
     function showPage(id) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -122,7 +120,6 @@
         event.currentTarget.classList.add('active');
     }
 
-    // --- 計算機邏輯 (精確扣除休息時間) ---
     function updateCalc() {
         const getFullDate = (timeStr) => {
             const [h, m] = timeStr.split(':');
@@ -134,44 +131,41 @@
         const brkEnd = getFullDate(document.getElementById('breakEnd').value);
         const end = getFullDate(document.getElementById('endTime').value);
         const now = new Date();
-        const rate = parseFloat(document.getElementById('hourlyRate').value);
-        const price = parseFloat(document.getElementById('itemPrice').value);
+        const rate = parseFloat(document.getElementById('hourlyRate').value) || 0;
+        const price = parseFloat(document.getElementById('itemPrice').value) || 0;
         
         let earned = 0;
+        let status = "";
 
-        // 計算邏輯：只算工作時間
-        if (now > start) {
-            // 第一階段：上班開始到 休息前
+        if (now < start) {
+            status = "尚未開工";
+        } else if (now >= brkStart && now <= brkEnd) {
+            status = "🍱 休息中 (不計薪)";
+            let firstPeriod = Math.max(0, brkStart - start);
+            earned = (firstPeriod / 3600000) * rate;
+        } else if (now > end) {
+            status = "🎉 已解放！";
+            let workMs = (brkStart - start) + (end - brkEnd);
+            earned = (workMs / 3600000) * rate;
+        } else {
+            status = "⚒️ 加油加油你最棒了";
             let firstPeriod = Math.min(now, brkStart) - start;
             if (firstPeriod < 0) firstPeriod = 0;
-
-            // 第二階段：休息結束到 現在（或解放時間）
             let secondPeriod = 0;
             if (now > brkEnd) {
-                secondPeriod = Math.min(now, end) - brkEnd;
+                secondPeriod = now - brkEnd;
             }
-            if (secondPeriod < 0) secondPeriod = 0;
-
-            const totalWorkMs = firstPeriod + secondPeriod;
-            earned = (totalWorkMs / 3600000) * rate;
+            earned = ((firstPeriod + secondPeriod) / 3600000) * rate;
         }
 
-        document.getElementById('itemCount').innerText = (earned / price).toFixed(2);
+        const count = price > 0 ? (earned / price).toFixed(2) : 0;
+        document.getElementById('itemCount').innerText = count;
         document.getElementById('displayItemName').innerText = document.getElementById('itemName').value;
-        
-        // 狀態顯示
-        let status = "";
-        if (now < start) status = "尚未開工";
-        else if (now >= brkStart && now <= brkEnd) status = "🍱 休息中 (不計薪)";
-        else if (now > end) status = "🎉 已解放！";
-        else status = "⚒️ 正在努力賺錢中";
-        
         document.getElementById('statusText').innerText = status;
     }
     setInterval(updateCalc, 1000);
 
-    // --- 日記與月曆邏輯 ---
-    let currentMonth = 2; // 3月
+    let currentMonth = 2; 
     let currentYear = 2026;
     let notes = JSON.parse(localStorage.getItem('cow_horse_notes') || '{}');
     let selectedDate = '';
@@ -181,15 +175,11 @@
         const title = document.getElementById('currentMonthYear');
         grid.innerHTML = '';
         title.innerText = `${currentYear}年 ${currentMonth + 1}月`;
-
         const days = ['日', '一', '二', '三', '四', '五', '六'];
         days.forEach(d => grid.innerHTML += `<div class="day-label">${d}</div>`);
-
         const firstDay = new Date(currentYear, currentMonth, 1).getDay();
         const totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
-
         for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div></div>`;
-
         for (let d = 1; d <= totalDays; d++) {
             const dateKey = `${currentYear}-${currentMonth + 1}-${d}`;
             const hasNote = notes[dateKey] ? 'has-note' : '';
